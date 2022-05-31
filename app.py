@@ -26,7 +26,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-form = ShowForm()
+
 # TODO: connect to a local postgresql database
 
 #----------------------------------------------------------------------------#
@@ -299,32 +299,30 @@ def search_artists():
       "num_upcoming_shows": 0,
     }]
   }
-  user_search_request = request.form.get('search_term', '')
-  artist_search = Artist.query.filter(Artist.name.ilike(f'%{user_search_request}%')).all()
-  count = Artist.query.filter(Artist.name.ilike(f'%{user_search_request}%')).count()
-  response = []
+  form = ShowForm()
 
-  for artist in artist_search:
-    num_upcoming_shows = 0
-    data = []
-    shows = Artist.query.filter(Show.id == Artist.id).all()
+  user_search_request = request.form['search_term']
+  artists = Artist.query.filter(Artist.name.ilike(f'%{user_search_request}%')).all()
+  data = []
 
-    for show in shows:
-      if show.start_time > datetime.now():
-        num_upcoming_shows += 1
-  
-    data.append({
-              "id": artist.id,
-              "name": artist.name,
-              "num_upcoming_shows": num_upcoming_shows
-          })
+  for artist in artists:
+      num_upcoming_shows = 0
+      shows = db.session.query(Show).filter(Show.artist_id == artist.id)
+      for show in shows:
+        if(show.start_time > datetime.now()):
+          num_upcoming_shows += 1
           
-    response.append({
-      "count": count,
-      "data":data
-      })
-
+      data.append({
+          "id": artist.id,
+          "name": artist.name,
+          "num_upcoming_shows": num_upcoming_shows
+        })
+  response={
+        "count": len(artists),
+        "data": data
+    }
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+
 
 @app.route('/artists/<int:artist_id>')
 def show_artist(artist_id):
@@ -402,6 +400,9 @@ def show_artist(artist_id):
     "upcoming_shows_count": 3,
   }
   data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
+
+  artist_search_result = db.session.query(Artist).filter(Artist.id == artist_id).all()
+
   return render_template('pages/show_artist.html', artist=data)
 
 #  Update
