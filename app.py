@@ -26,6 +26,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = SQLALCHEMY_DATABASE_URI
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+form = ShowForm()
 # TODO: connect to a local postgresql database
 
 #----------------------------------------------------------------------------#
@@ -298,6 +299,31 @@ def search_artists():
       "num_upcoming_shows": 0,
     }]
   }
+  user_search_request = request.form.get('search_term', '')
+  artist_search = Artist.query.filter(Artist.name.ilike(f'%{user_search_request}%')).all()
+  count = Artist.query.filter(Artist.name.ilike(f'%{user_search_request}%')).count()
+  response = []
+
+  for artist in artist_search:
+    num_upcoming_shows = 0
+    data = []
+    shows = Artist.query.filter(Show.id == Artist.id).all()
+
+    for show in shows:
+      if show.start_time > datetime.now():
+        num_upcoming_shows += 1
+  
+    data.append({
+              "id": artist.id,
+              "name": artist.name,
+              "num_upcoming_shows": num_upcoming_shows
+          })
+          
+    response.append({
+      "count": count,
+      "data":data
+      })
+
   return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
 
 @app.route('/artists/<int:artist_id>')
