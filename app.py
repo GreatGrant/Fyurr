@@ -50,8 +50,8 @@ class Venue(db.Model):
     
     def __repr__(self) -> str:
       return f'<Venue {self.id}, {self.name} {self.city} >'
-
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
+
 
 class Artist(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -59,20 +59,21 @@ class Artist(db.Model):
     city = db.Column(db.String(120))
     state = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    genres = db.Column(db.String(120))
+    genres = db.Column(ARRAY(String()))
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website = db.Column(db.String())
     seeking_venue = db.Column(db.Boolean, default=False, nullable=False)
     seeking_description = db.Column(db.String(), nullable=False)
-    
+
     def __repr__(self) -> str:
         return f'<Artist {self.id}, {self.name} {self.shows} >'
-    
 
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 # TODO Implement Show and Artist models, and complete all model relationships and properties, as a database migration.
+
+
 class Show(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     artist_id = db.Column(db.Integer, db.ForeignKey(
@@ -85,6 +86,10 @@ class Show(db.Model):
     def __repr__(self) -> str:
         return f'<Show {self.id}, {self.venue_id} {self.artist_id} >'
 
+
+#----------------------------------------------------------------------------#
+# Filters.
+#---------------------
 #----------------------------------------------------------------------------#
 # Filters.
 #----------------------------------------------------------------------------#
@@ -537,7 +542,7 @@ def shows():
     "artist_image_link": "https://images.unsplash.com/photo-1558369981-f9ca78462e61?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=794&q=80",
     "start_time": "2035-04-15T20:00:00.000Z"
   }]
-  return render_template('pages/shows.html', shows=data)
+  return render_template('pages/shows.html', shows=Show.query.all())
 
 @app.route('/shows/create')
 def create_shows():
