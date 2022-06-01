@@ -359,7 +359,7 @@ def show_artist(artist_id):
     "past_shows_count": 0,
     "upcoming_shows_count": 3,
   }
-  data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
+  # data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
   artist = db.session.query(Artist).filter(Artist.id == artist_id).one()
 
   list_shows = db.session.query(Show).filter(Show.artist_id == artist_id)
@@ -419,9 +419,34 @@ def edit_artist(artist_id):
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
-  # TODO: take values from the form submitted, and update existing
-  # artist record with ID <artist_id> using the new attributes
+  form = ArtistForm(request.form)
 
+  try:
+    edited_artist = {
+    "id": form.id.data,
+    "name": form.name.data,
+    "genres": form.genres.data,
+    "city": form.city.data,
+    "state": form.state.data,
+    "phone": form.phone.data,
+    "website": form.website.data,
+    "facebook_link": form.facebook_link.data,
+    "seeking_venue": form.seeking_venue.data,
+    "seeking_description": form.seeking_description.data,
+    "image_link": form.image_link.data,
+  }
+  
+    db.session.query(Artist).filter(Artist.id == artist_id).update(edited_artist)
+    db.session.commit()
+    flash(f'Artist {form.name.data}  was successfully listed!')
+  except:
+    db.session.rollback()
+    flash(f'An error occurred. artist {form.name.data}  could not be updated.')
+    print('exc_info(): ', exc_info())
+  finally:
+    db.session.close()
+
+  
   return redirect(url_for('show_artist', artist_id=artist_id))
 
 @app.route('/venues/<int:venue_id>/edit', methods=['GET'])
