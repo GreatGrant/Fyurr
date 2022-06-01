@@ -152,46 +152,56 @@ def search_venues():
 # TODO
 @app.route('/venues/<int:venue_id>')
 def show_venue(venue_id):
-  venue = Venue.query.get(venue_id)
+  filtered_venue = db.session.query(Venue).filter(Venue.id == venue_id).one()
 
   past_shows = []
   upcoming_shows = []
-  show_attributes = None
 
-  for show in venue.shows:
-    show_attributes = {
-      "artist_id": show.artist.id,
-      "artist_name": show.artist.name,
-      "artist_image_link": show.artist.image_link,
-      "start_time": show.start_time.strftime('%m/%d/%Y, %H:%M:%S')
-    }
-
-    if show.start_time <= datetime.now():
-      past_shows.append(show_attributes)
-    else:
-      upcoming_shows.append(show_attributes)
-
-
-  venue_dict = {
-    "id": venue.id,
-    "name": venue.name,
-    "genres": venue.genres,
-    "address": venue.address,
-    "city": venue.city,
-    "state": venue.state,
-    "phone": venue.phone,
-    "website": venue.website,
-    "facebook_link": venue.facebook_link,
-    "seeking_talent": venue.seeking_talent,
-    "seeking_description": venue.seeking_description,
-    "image_link": venue.image_link,
-    "past_shows": past_shows,
-    "upcoming_shows": upcoming_shows,
-    "past_shows_count": len(past_shows),
-    "upcoming_shows_count": len(upcoming_shows)
+  data = {
+      "id": filtered_venue.id,
+      "name": filtered_venue.name,
+      "genres": filtered_venue.genre,
+      "address": filtered_venue.address,
+      "city": filtered_venue.city,
+      "state": filtered_venue.state,
+      "phone": filtered_venue.phone,
+      "website": filtered_venue.website_link,
+      "facebook_link": filtered_venue.facebook_link,
+      "seeking_talent": filtered_venue.seeking_talent,
+      "seeking_description": filtered_venue.seeking_description,
+      "image_link": filtered_venue.image_link,
+      "past_shows": past_shows,
+      "upcoming_shows": upcoming_shows,
+      "past_shows_count": len(past_shows),
+      "upcoming_shows_count": len(upcoming_shows),
   }
 
-  return render_template('pages/show_venue.html', venue=venue_dict)
+  shows_of_venue = db.session.query(Show).filter(Show.venue_id == venue_id)
+  
+  for show in shows_of_venue:
+    artist = db.session.query(Artist.name, Artist.image_link).filter(Artist.id == show.artist_id).one()
+
+    if (show.start_time < datetime.now()):
+        past_shows.append({
+        "artist_id": show.artist_id,
+        "artist_name": artist.name,
+        "artist_image_link": artist.image_link,
+        "start_time": show.start_time.strftime('%m/%d/%Y')
+        })
+    else:
+        upcoming_shows.append({
+        "artist_id": show.artist_id,
+        "artist_name": artist.name,
+        "artist_image_link": artist.image_link,
+        "start_time": show.start_time.strftime('%m/%d/%Y')
+        })
+
+  data["past_shows"] = past_shows
+  data["upcoming_shows"] = upcoming_shows
+  data["past_shows_count"] = len(past_shows)
+  data["upcoming_shows_count"] = len(upcoming_shows)
+
+  return render_template('pages/show_venue.html', venue=data)
 
 
 #  Create Venue
