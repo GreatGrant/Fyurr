@@ -3,6 +3,7 @@
 #----------------------------------------------------------------------------#
 
 import json
+from sys import exc_info
 import dateutil.parser
 import babel
 from flask import Flask, render_template, request, Response, flash, redirect, url_for
@@ -220,9 +221,11 @@ def create_venue_submission():
       flash(f'Venue  {form.name.data} was successfully listed!')
   except:
       flash(f'An error occurred. Venue {form.name.data}  could not be added.')
+      print('exc_info()', exc_info())
+      db.session.rollback()
   finally:
       db.session.close()
-  return render_template('pages/home.html')
+  return redirect(url_for('venues'))
 
 
 @app.route('/venues/<venue_id>', methods=['DELETE'])
