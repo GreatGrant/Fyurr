@@ -112,31 +112,15 @@ def index():
 
 @app.route('/venues')
 def venues():
-  # TODO: replace with real venues data.
-  #       num_upcoming_shows should be aggregated based on number of upcoming shows per venue.
-  data=[{
-    "city": "San Francisco",
-    "state": "CA",
-    "venues": [{
-      "id": 1,
-      "name": "The Musical Hop",
-      "num_upcoming_shows": 0,
-    }, {
-      "id": 3,
-      "name": "Park Square Live Music & Coffee",
-      "num_upcoming_shows": 1,
-    }]
-  }, {
-    "city": "New York",
-    "state": "NY",
-    "venues": [{
-      "id": 2,
-      "name": "The Dueling Pianos Bar",
-      "num_upcoming_shows": 0,
-    }]
-  }]
-
-
+  venues = db.session.query(Venue.city, Venue.state).distinct(Venue.city, Venue.state)
+  for venue in venues:
+      venues_within_city = db.session.query(Venue.id, Venue.name).filter(Venue.city == venue.city).filter(Venue.state == venue.state)
+      
+      data = [{
+        "city": venue.city,
+        "state": venue.state,
+        "venues": venues_within_city
+      }]
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
@@ -288,19 +272,7 @@ def artists():
 
 @app.route('/artists/search', methods=['POST'])
 def search_artists():
-  # TODO: implement search on artists with partial string search. Ensure it is case-insensitive.
-  # seach for "A" should return "Guns N Petals", "Matt Quevado", and "The Wild Sax Band".
-  # search for "band" should return "The Wild Sax Band".
-  response={
-    "count": 1,
-    "data": [{
-      "id": 4,
-      "name": "Guns N Petals",
-      "num_upcoming_shows": 0,
-    }]
-  }
-  form = ShowForm()
-
+  
   user_search_request = request.form['search_term']
   artists = Artist.query.filter(Artist.name.ilike(f'%{user_search_request}%')).all()
   data = []
@@ -400,10 +372,53 @@ def show_artist(artist_id):
     "upcoming_shows_count": 3,
   }
   data = list(filter(lambda d: d['id'] == artist_id, [data1, data2, data3]))[0]
+  artist = db.session.query(Artist).filter(Artist.id == artist_id).one()
 
-  artist_search_result = db.session.query(Artist).filter(Artist.id == artist_id).all()
+  list_shows = db.session.query(Show).filter(Show.artist_id == artist_id)
+  past_shows = []
+  upcoming_shows = []
+
+  for show in list_shows:
+    venue = db.session.query(Venue.name, Venue.image_link).filter(Venue.id == show.venue_id).one()
+
+    show_add = {
+      "venue_id": show.venue_id,
+      "venue_name": venue.name,
+      "venue_image_link": venue.image_link,
+      "start_time": show.start_time.strftime('%m/%d/%Y')
+        }
+
+    
+    if (show.start_time < datetime.now()):
+              #print(past_shows, file=sys.stderr)
+              past_shows.append(show_add)
+    else:
+      print(show_add, file=sys.stderr)
+      upcoming_shows.append(show_add)
+
+    data = {
+        "id": artist.id,
+        "name": artist.name,
+        "genres": artist.genres,
+        "city": artist.city,
+        "state": artist.state,
+        "phone": artist.phone,
+        "website": artist.website,
+        "facebook_link": artist.facebook_link,
+        "seeking_venue": artist.seeking_venue,
+        "seeking_description": artist.seeking_description,
+        "image_link": artist.image_link,
+        "past_shows": past_shows,
+        "upcoming_shows": upcoming_shows,
+        "past_shows_count": len(past_shows),
+        "upcoming_shows_count": len(upcoming_shows),
+      }
 
   return render_template('pages/show_artist.html', artist=data)
+
+
+
+
 
 #  Update
 #  ----------------------------------------------------------------
