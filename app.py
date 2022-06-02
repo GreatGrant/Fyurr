@@ -75,14 +75,14 @@ def venues():
 @app.route('/venues/search', methods=['POST'])
 def search_venues():
   user_search_request = request.form['search_term']
-  venue_result = db.session.query(Venue).filter(Venue.name.ilike(f'%{user_search_request}%')).all()
-
+  venue_result = Venue.query.filter(Venue.name.ilike(f'%{user_search_request}%')).all()
+  data = []
   for result in venue_result:
-    data = [{
+    data.append({
       "id": result.id,
       "name": result.name,
       "num_upcoming_shows": len(result.shows)
-    }]
+    })
   
   response = {
     "count": len(venue_result),
