@@ -324,8 +324,7 @@ def show_artist(artist_id):
   for show in shows:
     venue = db.session.query(Venue.name, Venue.image_link).filter(Venue.id == show.venue_id).one()
     if (show.start_time < datetime.now()):
-              #print(past_shows, file=sys.stderr)
-              past_shows.append({
+      past_shows.append({
       "venue_id": show.venue_id,
       "venue_name": venue.name,
       "venue_image_link": venue.image_link,
@@ -363,25 +362,26 @@ def edit_artist(artist_id):
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
 def edit_artist_submission(artist_id):
   form = ArtistForm(request.form)
-
-  try:
-    edited_artist = {
-    "id": form.id.data,
+  artist_to_update = Artist.query.filter(Artist.id == artist_id)
+  
+  # updated artist based on user input
+  updated_artist_details = {
     "name": form.name.data,
     "genres": form.genres.data,
     "city": form.city.data,
     "state": form.state.data,
     "phone": form.phone.data,
-    "website": form.website.data,
+    "website": form.website_link.data,
     "facebook_link": form.facebook_link.data,
     "seeking_venue": form.seeking_venue.data,
     "seeking_description": form.seeking_description.data,
     "image_link": form.image_link.data,
   }
   
-    db.session.query(Artist).filter(Artist.id == artist_id).update(edited_artist)
+  try:
+    artist_to_update.update(updated_artist_details)
     db.session.commit()
-    flash(f'Artist {form.name.data}  was successfully listed!')
+    flash(f'Artist {form.name.data}  was successfully updated!')
   except:
     db.session.rollback()
     flash(f'An error occurred. artist {form.name.data}  could not be updated.')
@@ -403,8 +403,9 @@ def edit_venue_submission(venue_id):
   # TODO: take values from the form submitted, and update existing
   # venue record with ID <venue_id> using the new attributes
   form = VenueForm(request.form)
-  venue_to_update = db.session.query(Venue).filter(Venue.id == venue_id)
+  venue_to_update = Venue.query.filter(Venue.id == venue_id)
 
+  # Details of venue to be updated based on user input from form
   updated_venue_details = {
       "name": form.name.data,
       "genre": form.genres.data,
@@ -442,8 +443,8 @@ def create_artist_form():
 def create_artist_submission():
   form = ArtistForm(request.form)
 
-  # create Artist based on user's input 
-  artist = Artist(
+  # artist created based on user's input 
+  created_artist = Artist(
     name = form.name.data,
     city = form.city.data,
     state = form.city.data,
@@ -456,7 +457,7 @@ def create_artist_submission():
     seeking_description = form.seeking_description.data
   )
   try:
-    db.session.add(artist)
+    db.session.add(created_artist)
     db.session.commit()
     flash('Artist ' + request.form[ 'name'] + ' was successfully listed!')
   except:
@@ -475,15 +476,15 @@ def shows():
   shows = Show.query.all()
   data = []
   for show in shows:
-    data_details = {
-            "venue_id": show.venue.id,
-            "venue_name": show.venue.name,
-            "artist_id": show.artist_id,
-            "artist_name": show.artist.name,
-            "artist_image_link": show.artist.image_link,
-            "start_time": str(show.start_time)
-        }
-  data.append(data_details)
+    data.append({
+      "venue_id": show.venue.id,
+      "venue_name": show.venue.name,
+      "artist_id": show.artist_id,
+      "artist_name": show.artist.name,
+      "artist_image_link": show.artist.image_link,
+      "start_time": str(show.start_time)
+        })
+  
   return render_template('pages/shows.html', shows=data)
 
 @app.route('/shows/create')
@@ -496,14 +497,14 @@ def create_shows():
 def create_show_submission():
   form = ShowForm(request.form)
   
-  # create Artist based on user's input 
-  show = Show(
+  # show created based on user's input 
+  created_show = Show(
     artist_id = form.artist_id.data,
     venue_id = form.venue_id.data,
     start_time = form.start_time.data,
   )
   try:
-    db.session.add(show)
+    db.session.add(created_show)
     db.session.commit()
     flash('Show was successfully listed!')    
   except:
