@@ -298,48 +298,53 @@ def search_artists():
 def show_artist(artist_id):
   
   artist = db.session.query(Artist).filter(Artist.id == artist_id).one()
-
-  list_shows = db.session.query(Show).filter(Show.artist_id == artist_id)
   past_shows = []
   upcoming_shows = []
-  data = { }
 
-  for show in list_shows:
+  data = {
+      "id": artist.id,
+      "name": artist.name,
+      "genres": artist.genres,
+      "city": artist.city,
+      "state": artist.state,
+      "phone": artist.phone,
+      "website": artist.website,
+      "facebook_link": artist.facebook_link,
+      "seeking_venue": artist.seeking_venue,
+      "seeking_description": artist.seeking_description,
+      "image_link": artist.image_link,
+      "past_shows": past_shows,
+      "upcoming_shows": upcoming_shows,
+      "past_shows_count": len(past_shows),
+      "upcoming_shows_count": len(upcoming_shows),
+      }
+
+  shows = db.session.query(Show).filter(Show.artist_id == artist_id)
+  #Iterate through shows to get needed show details
+  for show in shows:
     venue = db.session.query(Venue.name, Venue.image_link).filter(Venue.id == show.venue_id).one()
-
-    show_add = {
+    if (show.start_time < datetime.now()):
+              #print(past_shows, file=sys.stderr)
+              past_shows.append({
       "venue_id": show.venue_id,
       "venue_name": venue.name,
       "venue_image_link": venue.image_link,
       "start_time": show.start_time.strftime('%m/%d/%Y')
-        }
-
-    
-    if (show.start_time < datetime.now()):
-              #print(past_shows, file=sys.stderr)
-              past_shows.append(show_add)
+        })
     else:
-      print(show_add, file=sys.stderr)
-      upcoming_shows.append(show_add)
+      upcoming_shows.append({
+      "venue_id": show.venue_id,
+      "venue_name": venue.name,
+      "venue_image_link": venue.image_link,
+      "start_time": show.start_time.strftime('%m/%d/%Y')
+        })
 
-    data = {
-        "id": artist.id,
-        "name": artist.name,
-        "genres": artist.genres,
-        "city": artist.city,
-        "state": artist.state,
-        "phone": artist.phone,
-        "website": artist.website,
-        "facebook_link": artist.facebook_link,
-        "seeking_venue": artist.seeking_venue,
-        "seeking_description": artist.seeking_description,
-        "image_link": artist.image_link,
-        "past_shows": past_shows,
-        "upcoming_shows": upcoming_shows,
-        "past_shows_count": len(past_shows),
-        "upcoming_shows_count": len(upcoming_shows),
-      }
-
+    # Update data with new show details
+  data["past_shows"] = past_shows
+  data["upcoming_shows"] = upcoming_shows
+  data["past_shows_count"] = len(past_shows)
+  data["upcoming_shows_count"] = len(upcoming_shows)
+  
   return render_template('pages/show_artist.html', artist=data)
 
 
