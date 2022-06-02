@@ -119,14 +119,15 @@ def index():
 @app.route('/venues')
 def venues():
   venues = db.session.query(Venue.city, Venue.state).distinct(Venue.city, Venue.state)
+  data = [ ]
   for venue in venues:
       venues_within_city = db.session.query(Venue.id, Venue.name).filter(Venue.city == venue.city).filter(Venue.state == venue.state)
 
-      data = [{
+      data.append({
         "city": venue.city,
         "state": venue.state,
         "venues": venues_within_city
-      }]
+      })
   return render_template('pages/venues.html', areas=data);
 
 @app.route('/venues/search', methods=['POST'])
