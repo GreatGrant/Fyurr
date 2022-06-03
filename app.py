@@ -5,7 +5,15 @@ import json
 from sys import exc_info
 import dateutil.parser
 import babel
-from flask import Flask, render_template, request, Response, flash, redirect, url_for
+from flask import (
+  Flask,
+  render_template,
+  request,
+  Response,
+  flash,
+  redirect,
+  url_for
+)
 from sqlalchemy import ARRAY, String
 from flask_moment import Moment
 from flask_sqlalchemy import SQLAlchemy
