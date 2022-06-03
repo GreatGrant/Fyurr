@@ -3,3 +3,9 @@ python-dateutil==2.6.0
 flask-moment==0.11.0
 flask-wtf==0.14.3
 flask_sqlalchemy==2.4.4
+alembic==1.7.7
+Flask==2.1.2
+Flask-Migrate==2.5.2
+psycopg2==2.8.3
+virtualenv==16.7.5
+WTForms==2.2.1
