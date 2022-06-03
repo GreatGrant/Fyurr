@@ -477,6 +477,13 @@ def not_found_error(error):
 def server_error(error):
     return render_template('errors/500.html'), 500
 
+@app.errorhandler(401)
+def unauthorized(error):
+    return render_template('errors/401.html'), 401
+
+@app.errorhandler(405)
+def invalid_method(error):
+    return render_template('errors/405.html'), 405
 
 if not app.debug:
     file_handler = FileHandler('error.log')
