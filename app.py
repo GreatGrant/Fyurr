@@ -16,7 +16,7 @@ from flask import (
 )
 from sqlalchemy import ARRAY, String
 from flask_moment import Moment
-from flask_sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy 
 import logging
 from logging import Formatter, FileHandler
 from flask_wtf import Form
@@ -60,7 +60,9 @@ app.jinja_env.filters['datetime'] = format_datetime
 
 @app.route('/')
 def index():
-  return render_template('pages/home.html')
+  venues = Venue.query.order_by(Venue.id.desc()).limit(10).all()
+  artists = Artist.query.order_by(Artist.id.desc()).limit(10).all()
+  return render_template('pages/home.html', venues=venues, artists = artists)
 
 
 #  Venues
