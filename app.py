@@ -1,6 +1,6 @@
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 # Imports
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 import json
 from sys import exc_info
 import dateutil.parser
@@ -24,9 +24,9 @@ from forms import *
 from config import SQLALCHEMY_DATABASE_URI
 from flask_migrate import Migrate
 from models import db, Artist, Venue, Show
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 # App Config.
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 
 app = Flask(__name__)
 moment = Moment(app)
@@ -37,12 +37,12 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
 
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 # Filters.
 # ---------------------
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 # Filters.
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 
 def format_datetime(value, format='medium'):
     date = dateutil.parser.parse(value)
@@ -55,9 +55,9 @@ def format_datetime(value, format='medium'):
 
 app.jinja_env.filters['datetime'] = format_datetime
 
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 # Controllers.
-#----------------------------------------------------------------------------#
+# ----------------------------------------------------------------------------#
 
 
 @app.route('/')
@@ -105,7 +105,12 @@ def search_venues():
         "data": data
     }
 
-    return render_template('pages/search_venues.html', results=response, search_term=request.form.get('search_term', ''))
+    return render_template(
+        'pages/search_venues.html',
+        results=response,
+        search_term=request.form.get(
+            'search_term', ''
+            ))
 
 
 @app.route('/venues/<int:venue_id>')
@@ -219,10 +224,7 @@ def delete_venue(venue_id):
         db.session.close()
 
     return redirect(url_for('venues'))
-    # BONUS CHALLENGE: Implement a button to delete a Venue on a Venue Page, have it so that
-    # clicking that button delete it from the db then redirect the user to the homepage
-    # return None
-
+    
 #  Artists
 #  ----------------------------------------------------------------
 
@@ -256,7 +258,12 @@ def search_artists():
         "count": len(artists_search_result),
         "data": data
     }
-    return render_template('pages/search_artists.html', results=response, search_term=request.form.get('search_term', ''))
+    return render_template(
+        'pages/search_artists.html',
+        results=response,
+        search_term=request.form.get(
+            'search_term', '')
+            )
 
 
 @app.route('/artists/<int:artist_id>')
@@ -321,7 +328,10 @@ def edit_artist(artist_id):
 
     artist_to_edit = db.session.query(
         Artist).filter(Artist.id == artist_id).one()
-    return render_template('forms/edit_artist.html', form=form, artist=artist_to_edit)
+    return render_template(
+        'forms/edit_artist.html',
+        form=form,
+        artist=artist_to_edit)
 
 
 @app.route('/artists/<int:artist_id>/edit', methods=['POST'])
@@ -350,7 +360,7 @@ def edit_artist_submission(artist_id):
     except:
         db.session.rollback()
         flash(
-            f'An error occurred. artist {form.name.data}  could not be updated.')
+            f'An error occurred. {form.name.data} could not be updated.')
         print('exc_info(): ', exc_info())
     finally:
         db.session.close()
@@ -394,7 +404,8 @@ def edit_venue_submission(venue_id):
         print('exc_info() ', exc_info())
         db.session.rollback()
         flash('An error occurred. Venue ' +
-              form.name.data + ' could not be updated.')
+              form.name.data +
+            ' could not be updated.')
     finally:
         db.session.close()
     return redirect(url_for('show_venue', venue_id=venue_id))
@@ -514,7 +525,8 @@ if not app.debug:
     file_handler = FileHandler('error.log')
     file_handler.setFormatter(
         Formatter(
-            '%(asctime)s %(levelname)s: %(message)s [in %(pathname)s:%(lineno)d]')
+            '%(asctime)s %(levelname)s: %(message)s 
+            [in %(pathname)s:%(lineno)d]')
     )
     app.logger.setLevel(logging.INFO)
     file_handler.setLevel(logging.INFO)
