@@ -15,5 +15,5 @@ DATABASE_NAME = "fyurr"
 username = 'postgres'
 password = ''
 url = 'localhost:5432'
-SQLALCHEMY_DATABASE_URI = "postgres://{}:{}@{}/{}".format(
+SQLALCHEMY_DATABASE_URI = "postgresql://{}:{}@{}/{}".format(
         username, password, url, DATABASE_NAME)
